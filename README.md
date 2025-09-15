@@ -130,7 +130,7 @@ kubectl get pods -n r-pipelines-workshop
 kubectl port-forward -n r-pipelines-workshop service/r-pipelines 9001 9000 5432 3838
 ```
 
-Make several HTTP requests to the pod containers via curl
+Make several HTTP requests to the pod services via curl
 
 ```
 curl --resolve shiny.r-pipelines.nzsa.co.nz:3838:127.0.0.1 http://shiny.r-pipelines.nzsa.co.nz:3838
