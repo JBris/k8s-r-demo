@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: r-pipelines
+  namespace: r-pipelines-workshop
+  labels:
+    app: r-pipelines
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: r-pipelines
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: r-pipelines
+    spec:
+      containers:
+        - image: ghcr.io/plant-food-research-open/shiny-rpipelines:0.1.0
+          imagePullPolicy: Always
+          name: shiny
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: user
+            - name: AWS_SECRET_ACCESS_KEY
+              value: password
+        - image: postgres:15.3-bullseye
+          imagePullPolicy: Always
+          name: postgres
+          env:
+            - name: POSTGRES_USER
+              value: user
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: r-pipelines
+        - image: minio/minio:RELEASE.2023-05-27T05-56-19Z
+          imagePullPolicy: Always
+          name: minio
+          workingDir: /data
+          args:
+            - server
+            - --console-address
+            - :9001
+            - --address
+            - :9000
+            - /data
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: user
+            - name: MINIO_SECRET_KEY
+              value: password
+            - name: MINIO_ROOT_USER
+              value: user
+            - name: MINIO_ROOT_PASSWORD
+              value: password
+            - name: MINIO_STORAGE_USE_HTTPS
+              value: "False"
+            - name: MINIO_PROMETHEUS_AUTH_TYPE
+              value: public
+          # volumeMounts:
+          #   - mountPath: /data
+          #     name: vol-r-pipelines-minio
+      restartPolicy: Always
+      # volumes:
+      #   - name: vol-r-pipelines-minio
+      #     persistentVolumeClaim:
+      #       claimName: vol-r-pipeline-minio

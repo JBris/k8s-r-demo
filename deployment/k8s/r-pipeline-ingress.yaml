@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: r-pipelines
+  namespace: r-pipelines-workshop
+  annotations:
+    cert-manager.io/cluster-issuer: k8s-tls-issuer
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "500"
+    nginx.ingress.kubernetes.io/keep-alive-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-body-size: 200M
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: shiny.r-pipelines.nzsa.co.nz
+      http:
+        paths:
+          - backend:
+              service:
+                name: r-pipelines
+                port:
+                  name: port-3838
+            path: /
+            pathType: Prefix
+    - host: minio.r-pipelines.k8s.nzsa.co.nz
+      http:
+        paths:
+          - backend:
+              service:
+                name: r-pipelines
+                port:
+                  name: port-9001
+            path: /
+            pathType: Prefix
+    - host: minio-api.r-pipelines.nzsa.co.nz
+      http:
+        paths:
+          - backend:
+              service:
+                name: r-pipelines
+                port:
+                  name: port-9000
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - "shiny.r-pipelines.nzsa.co.nz"
+        - "minio.r-pipelines.k8s.nzsa.co.nz"
+        - "minio-api.r-pipelines.nzsa.co.nz"
+      secretName: r-pipelines-tls-secret
